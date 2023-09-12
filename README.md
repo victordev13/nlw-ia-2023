@@ -1,1 +1,3 @@
-# nlw-ia-2023
+# NLW IA 2023
+
+Project name: upload.ai
