@@ -5,9 +5,16 @@ import { Textarea } from './ui/textarea'
 import { Label } from './ui/label'
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from 'react'
 import { convertVideoToAudio } from '@/lib/utils/convert-video-to-audio'
+import { api } from '@/lib/axios'
+
+type Video = { id: string }
+
+type Status = 'waiting' | 'converting' | 'uploading' | 'generating' | 'success'
 
 export function VideoInputForm() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [status, setStatus] = useState<Status>('waiting')
+
   const promptInputRef = useRef<HTMLTextAreaElement>(null)
 
   function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
@@ -26,7 +33,24 @@ export function VideoInputForm() {
     if (!videoFile) return
 
     const audioFile = await convertVideoToAudio(videoFile)
-    console.log(audioFile)
+
+    const formData = new FormData()
+    formData.append('file', audioFile)
+
+    const { data: uploadData } = await api.post<{ video: Video }>(
+      '/videos/upload',
+      formData,
+    )
+
+    const videoId = uploadData.video.id
+
+    const { data: transcriptionData } = await api.post<{
+      transcription: string
+    }>(`videos/${videoId}/generate-transcription`, {
+      prompt,
+    })
+
+    console.log('finalizado')
   }
 
   const previewURL = useMemo(() => {

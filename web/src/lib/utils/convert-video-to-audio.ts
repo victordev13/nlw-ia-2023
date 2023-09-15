@@ -1,12 +1,14 @@
 import { fetchFile } from '@ffmpeg/util'
 import { getFfmpeg } from '../ffmpeg'
 
-export async function convertVideoToAudio(video: File) {
+export async function convertVideoToAudio(video: File, debug = false) {
   const ffmpeg = await getFfmpeg()
 
   await ffmpeg.writeFile('input.mp4', await fetchFile(video))
 
-  ffmpeg.on('log', console.log)
+  if (debug) {
+    ffmpeg.on('log', console.log)
+  }
 
   ffmpeg.on('progress', (progress) => {
     console.log('Convert progress' + Math.round(progress.progress * 100))
